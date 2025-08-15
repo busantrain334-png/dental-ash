@@ -1,0 +1,7 @@
+# Netlify redirects and rewrites
+
+# Handle form submissions
+/thank-you   /thank-you.html   200
+
+# Handle 404s
+/*           /index.html       404
