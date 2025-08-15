@@ -350,26 +350,47 @@
             const formData = new FormData(this);
             const submitButton = this.querySelector('button[type="submit"]');
             
+            // Convert FormData to JSON
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
             // Disable button and show loading
             submitButton.disabled = true;
             submitButton.textContent = 'Submitting...';
             
-            fetch('submit_appointment.php', {
+            // REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+            
+            fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                body: formData
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message + ' Appointment ID: ' + data.appointment_id);
-                    this.reset(); // Clear form
-                } else {
-                    alert('Error: ' + data.message);
-                }
+            .then(() => {
+                // Success (no-cors mode doesn't allow reading response)
+                alert('✅ Appointment request submitted successfully! We will contact you within 24 hours.');
+                this.reset(); // Clear form
+                
+                // Optional: Also send to WhatsApp
+                const message = `New Appointment Request:
+👤 Name: ${data.first_name} ${data.last_name}
+📧 Email: ${data.email}
+📱 Phone: ${data.phone}
+🦷 Service: ${data.service}
+💬 Message: ${data.message}`;
+                
+                const whatsappUrl = `https://wa.me/919486835905?text=${encodeURIComponent(message)}`;
+                // Uncomment the next line if you want to auto-open WhatsApp
+                // window.open(whatsappUrl, '_blank');
             })
             .catch(error => {
-                alert('Error submitting appointment. Please try again.');
                 console.error('Error:', error);
+                alert('❌ Error submitting appointment. Please contact us directly via WhatsApp or phone.');
             })
             .finally(() => {
                 // Re-enable button
